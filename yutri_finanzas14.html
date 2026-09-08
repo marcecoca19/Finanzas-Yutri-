@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yutri — Sistema Financiero</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#F7F7F5;color:#2C2C2A;min-height:100vh}
+.topnav{background:#1D9E75;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.topnav h1{color:#fff;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.topnav-actions{display:flex;gap:8px}
+.layout{display:flex;min-height:calc(100vh - 52px)}
+.sidebar{width:200px;background:#fff;border-right:1px solid #e8e8e5;padding:14px 0;flex-shrink:0}
+.side-item{padding:10px 20px;font-size:13px;color:#5F5E5A;cursor:pointer;display:flex;align-items:center;gap:10px;border-left:3px solid transparent}
+.side-item:hover{background:#fafaf8;color:#2C2C2A}
+.side-item.active{background:#E1F5EE;color:#0F6E56;border-left-color:#1D9E75;font-weight:700}
+.side-section{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#aaa;padding:14px 20px 6px;font-weight:700}
+.main{flex:1;padding:20px 24px;max-width:1300px}
+.btn{padding:7px 14px;border-radius:6px;border:1px solid #ccc;background:#fff;color:#2C2C2A;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:Arial,sans-serif}
+.btn:hover{background:#f0f0ee}
+.btn-green{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.btn-green:hover{background:#0F6E56;border-color:#0F6E56}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-danger{color:#A32D2D;border-color:#F09595}
+.btn-danger:hover{background:#FCEBEB}
+h2.page-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:13px;color:#888780;margin-bottom:18px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
+.metric{background:#fff;border-radius:8px;padding:12px 14px;border:1px solid #e8e8e5}
+.metric .lbl{font-size:11px;color:#888780;margin-bottom:4px}
+.metric .val{font-size:22px;font-weight:700}
+.metric .sub{font-size:11px;color:#aaa;margin-top:2px}
+.m-green .val{color:#1D9E75}
+.m-red .val{color:#A32D2D}
+.m-blue .val{color:#185FA5}
+.m-amber .val{color:#BA7517}
+.m-gray .val{color:#5F5E5A}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toolbar input,.toolbar select{padding:7px 10px;border-radius:6px;border:1px solid #ccc;font-size:13px;font-family:Arial,sans-serif;background:#fff;color:#2C2C2A}
+.toolbar input[type=text],.toolbar input[type=search]{width:180px}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #e8e8e5}
+thead{background:#2C2C2A}
+th{text-align:left;padding:10px 12px;color:#fff;font-size:12px;font-weight:600;white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid #f0f0ee;color:#2C2C2A;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf8}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+th.num{text-align:right}
+td.nowrap{white-space:nowrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.b-ingreso{background:#EAF3DE;color:#3B6D11}
+.b-egreso{background:#FCEBEB;color:#A32D2D}
+.b-cat{background:#E6F1FB;color:#185FA5}
+.b-prueba{background:#FAEEDA;color:#854F0B}
+.b-semanal{background:#E1F5EE;color:#0F6E56}
+.b-mensual{background:#E6F1FB;color:#185FA5}
+.b-personal{background:#EEEDFE;color:#3C3489}
+.empty{text-align:center;padding:40px;color:#aaa;font-size:14px;background:#fff;border-radius:8px;border:1px solid #e8e8e5}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:24px;width:100%;max-width:540px;margin:auto;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:18px;color:#2C2C2A}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+.fg label{font-size:12px;color:#888780;font-weight:600}
+.fg input,.fg select,.fg textarea{padding:8px 10px;border-radius:6px;border:1px solid #ccc;font-size:13px;font-family:Arial,sans-serif;color:#2C2C2A;background:#fff}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:#1D9E75;box-shadow:0 0 0 2px rgba(29,158,117,.12)}
+.fg textarea{min-height:55px;resize:vertical}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #f0f0ee}
+.section-title{font-size:13px;font-weight:700;color:#2C2C2A;margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+.card{background:#fff;border-radius:8px;border:1px solid #e8e8e5;padding:18px;margin-bottom:14px}
+.row-flex{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f5f5f3;font-size:13px}
+.row-flex:last-child{border-bottom:none}
+.row-flex.total{font-weight:700;font-size:14px;border-top:2px solid #2C2C2A;padding-top:10px;margin-top:4px}
+tr.total-row td{font-weight:700;background:#fafaf8;border-top:2px solid #2C2C2A}
+.row-flex .v-pos{color:#1D9E75;font-weight:700}
+.row-flex .v-neg{color:#A32D2D;font-weight:700}
+.indent{padding-left:16px;color:#888780}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bar-label{font-size:12px;width:170px;flex-shrink:0;color:#5F5E5A}
+.bar-track{flex:1;height:18px;background:#f0f0ee;border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;background:#1D9E75;border-radius:4px}
+.bar-val{font-size:12px;font-weight:700;width:90px;text-align:right;flex-shrink:0}
+@media(max-width:900px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;display:flex;overflow-x:auto;padding:8px}
+  .side-section{display:none}
+  .side-item{white-space:nowrap;border-left:none;border-bottom:3px solid transparent}
+  .side-item.active{border-left:none;border-bottom-color:#1D9E75}
+  .grid2{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr}
+  .fg.full{grid-column:1}
+  .main{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <h1>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 7l10-5 10 5M2 7v10l10 5 10-5V7"/></svg>
+    Yutri — Sistema Financiero
+  </h1>
+  <div class="topnav-actions">
+    <span id="syncStatus" style="font-family:Arial,sans-serif;font-size:12px;color:rgba(255,255,255,.85);margin-right:6px;">conectando…</span>
+    <button class="btn" style="color:#fff;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.15)" onclick="exportAll()">⬇ Exportar todo (JSON)</button>
+    <label class="btn" style="color:#fff;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.15);cursor:pointer">
+      ⬆ Importar
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importAll(event)">
+    </label>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="side-section">Resumen</div>
+    <div class="side-item active" data-page="dashboard" onclick="goTo(this)"><i>📊</i> Estado de resultados</div>
+    <div class="side-item" data-page="rentabilidad" onclick="goTo(this)"><i>📈</i> Rentabilidad</div>
+    <div class="side-item" data-page="costocliente" onclick="goTo(this)"><i>🍱</i> Costo por cliente</div>
+    <div class="side-section">Registros</div>
+    <div class="side-item" data-page="ventas" onclick="goTo(this)"><i>💰</i> Libro de ventas</div>
+    <div class="side-item" data-page="compras" onclick="goTo(this)"><i>🛒</i> Libro de compras</div>
+    <div class="side-item" data-page="fijos" onclick="goTo(this)"><i>📌</i> Costos fijos</div>
+    <div class="side-item" data-page="proyeccion" onclick="goTo(this)"><i>🔮</i> Proyección de costos</div>
+    <div class="side-section">Configuración</div>
+    <div class="side-item" data-page="config" onclick="goTo(this)"><i>⚙️</i> Planes y precios</div>
+  </div>
+
+  <div class="main" id="main"></div>
+</div>
+
+<div class="overlay" id="overlay">
+<div class="modal" id="modal-body"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════
+// DATA MODEL
+// ════════════════════════════════════════════════════════════════════
+var DEFAULT_DATA = {
+  planes: [
+    {id:'p1',nombre:'Prueba 1500 kcal',dias:2,precio:190000},
+    {id:'p2',nombre:'Prueba 2000 kcal',dias:2,precio:210000},
+    {id:'p3',nombre:'Semanal 1500 kcal',dias:5,precio:460000},
+    {id:'p4',nombre:'Semanal 2000 kcal',dias:5,precio:500000},
+    {id:'p5',nombre:'Mensual 1500 kcal',dias:20,precio:1760000},
+    {id:'p6',nombre:'Mensual 2000 kcal',dias:20,precio:1900000},
+    {id:'p7',nombre:'Personalizado Semanal 1500',dias:5,precio:520000},
+    {id:'p8',nombre:'Personalizado Semanal 2000',dias:5,precio:560000},
+    {id:'p9',nombre:'Personalizado Mensual 1500',dias:20,precio:1950000},
+    {id:'p10',nombre:'Personalizado Mensual 2000',dias:20,precio:2100000},
+    {id:'p11',nombre:'Almuerzo y Cena Prueba 1500',dias:2,precio:160000},
+    {id:'p12',nombre:'Almuerzo y Cena Prueba 2000',dias:2,precio:168000},
+    {id:'p13',nombre:'Almuerzo y Cena Semanal 1500',dias:5,precio:380000},
+    {id:'p14',nombre:'Almuerzo y Cena Semanal 2000',dias:5,precio:400000},
+    {id:'p15',nombre:'Almuerzo y Cena Mensual 1500',dias:20,precio:1390000},
+    {id:'p16',nombre:'Almuerzo y Cena Mensual 2000',dias:20,precio:1470000}
+  ],
+  ventas: [],
+  compras: [],
+  fijos: [
+    {id:'f1',concepto:'Alquiler',monto:0},
+    {id:'f2',concepto:'Sueldos',monto:0},
+    {id:'f3',concepto:'Bebedero',monto:0},
+    {id:'f4',concepto:'Luz',monto:0},
+    {id:'f5',concepto:'Agua',monto:0},
+    {id:'f6',concepto:'Internet',monto:0}
+  ],
+  fijosPagos: [],
+  categoriasCompra: ['Ingredientes','Packaging / Envases','Delivery / Combustible','Marketing','Servicios (luz, agua, internet)','Alquiler','Sueldos','Mantenimiento / Equipos','Otros'],
+  proveedores: [],
+  clientes: [],
+  costoCliente: {
+    comida4: {prueba:66000, semanal:165000, mensual:660000},
+    comidaAyC: {prueba:46000, semanal:115000, mensual:460000},
+    bolsa4: {prueba:1296, semanal:3240, mensual:12960},
+    bolsaAyC_conDelivery: {prueba:1500, semanal:3750, mensual:15000},
+    caja4: {prueba:18400, semanal:46000, mensual:184000},
+    cajaAyC: {prueba:9200, semanal:23000, mensual:92000},
+    deliveryIncluido: {prueba:15000, semanal:45000, mensual:180000},
+    precios4: {prueba:95000, semanal:92000, mensual:88000},
+    preciosAyC: {prueba:80000, semanal:76000, mensual:69500},
+    comisionAyC: {prueba:0, semanal:50000, mensual:100000},
+    comision4: {prueba:0, semanal:50000, mensual:100000},
+    deliveryDia: 9000,
+    comidaDia4: 30000,
+    bolsaDia4: 648,
+    cajaDia4: 9200,
+    comidaDiaAyC: 33000,
+    bolsaDiaAyC: 648,
+    cajaDiaAyC: 9200
+  }
+};
+
+var data = loadData();
+
+function loadData(){
+  try{
+    var raw = localStorage.getItem('yutri_finanzas');
+    if(raw){
+      var parsed = JSON.parse(raw);
+      // ensure all keys exist
+      for(var k in DEFAULT_DATA){ if(!(k in parsed)) parsed[k]=DEFAULT_DATA[k]; }
+      // Migrar planes nuevos de Almuerzo y Cena si no existen
+      var planesNuevos=['p11','p12','p13','p14','p15','p16'];
+      planesNuevos.forEach(function(pid){
+        if(!parsed.planes.find(function(p){return p.id===pid;})){
+          var def=DEFAULT_DATA.planes.find(function(p){return p.id===pid;});
+          if(def) parsed.planes.push(def);
+        }
+      });
+      // migrate old fijos format (had .mes per entry) to new concept-based structure
+      if(parsed.fijos.length && parsed.fijos[0].hasOwnProperty('mes')){
+        var oldFijos=parsed.fijos;
+        var conceptMap={};
+        var nuevos=[];
+        var pagos=[];
+        oldFijos.forEach(function(f){
+          var key=f.concepto;
+          if(!conceptMap[key]){
+            var c={id:uid(),concepto:f.concepto,monto:f.monto};
+            conceptMap[key]=c;
+            nuevos.push(c);
+          }
+          pagos.push({id:uid(),conceptoId:conceptMap[key].id,mes:f.mes,monto:f.monto,pagado:false});
+        });
+        parsed.fijos=nuevos;
+        parsed.fijosPagos=pagos;
+      }
+      if(!parsed.clientes.length && parsed.ventas.length){
+        var set={};
+        parsed.ventas.forEach(function(v){ if(v.cliente) set[v.cliente]=true; });
+        parsed.clientes=Object.keys(set).sort();
+      }
+      return parsed;
+    }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+var FIREBASE_FIN_URL='https://yutri-control-de-menu-default-rtdb.firebaseio.com/finanzas_app.json';
+var saveTimer=null;
+function setSyncStatus(txt){
+  var el=document.getElementById('syncStatus');
+  if(el) el.textContent=txt;
+}
+function saveData(){
+  try{ localStorage.setItem('yutri_finanzas', JSON.stringify(data)); }catch(e){}
+  setSyncStatus('guardando…');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(function(){
+    fetch(FIREBASE_FIN_URL,{method:'PUT',body:JSON.stringify(data)})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); setSyncStatus('guardado ✓'); })
+      .catch(function(e){ console.error(e); setSyncStatus('⚠ sin conexión — guardado solo en este dispositivo'); });
+  },600);
+}
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function fmtGs(n){ n=Math.round(n||0); return 'Gs ' + n.toLocaleString('es-PY'); }
+function fmtPct(n){ if(!isFinite(n)) return '—'; return (Math.round(n*10)/10).toLocaleString('es-PY') + '%'; }
+function monthLabel(ym){
+  var meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var parts=ym.split('-'); return meses[parseInt(parts[1])-1]+' '+parts[0];
+}
+function todayYM(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function ymOf(dateStr){ return dateStr.slice(0,7); }
+
+// ════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════════════════
+var currentPage='dashboard';
+function goTo(el){
+  currentPage=el.dataset.page;
+  document.querySelectorAll('.side-item').forEach(function(i){i.classList.remove('active')});
+  el.classList.add('active');
+  render();
+}
+function render(){
+  if(currentPage==='dashboard') renderDashboard();
+  else if(currentPage==='rentabilidad') renderRentabilidad();
+  else if(currentPage==='costocliente') renderCostoCliente();
+  else if(currentPage==='ventas') renderVentas();
+  else if(currentPage==='compras') renderCompras();
+  else if(currentPage==='fijos') renderFijos();
+  else if(currentPage==='proyeccion') renderProyeccion();
+  else if(currentPage==='config') renderConfig();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// HELPERS: month list / filters
+// ════════════════════════════════════════════════════════════════════
+function allMonths(){
+  var set={};
+  data.ventas.forEach(function(v){set[ymOf(v.fecha)]=true});
+  data.compras.forEach(function(c){set[ymOf(c.fecha)]=true});
+  data.fijosPagos.forEach(function(f){set[f.mes]=true});
+  set[todayYM()]=true;
+  return Object.keys(set).sort();
+}
+function monthSelector(id, selected, onchange){
+  var months=allMonths();
+  var h='<select id="'+id+'" onchange="'+onchange+'">';
+  months.forEach(function(m){
+    h+='<option value="'+m+'" '+(m===selected?'selected':'')+'>'+monthLabel(m)+'</option>';
+  });
+  h+='</select>';
+  return h;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// CALCULATIONS
+// ════════════════════════════════════════════════════════════════════
+function ventasDelMes(ym){
+  var result=[];
+  // IDs de ventas originales que tienen tramos (para evitar doble conteo con _esDevengado)
+  var conTramos={};
+  data.ventas.forEach(function(v){ if(v.tramos&&v.tramos.length>1) conTramos[v.id]=true; });
+
+  data.ventas.forEach(function(v){
+    if(v._esDevengado){
+      // Saltar si el padre ya tiene tramos (ya se muestra via tramo)
+      if(v.devengadoDe && conTramos[v.devengadoDe]) return;
+      if(ymOf(v.fecha)===ym) result.push(v);
+    } else if(v.tramos&&v.tramos.length>1){
+      var tramo=v.tramos.find(function(t){return t.ym===ym});
+      if(tramo){
+        result.push(Object.assign({},v,{
+          monto:tramo.monto,
+          delivery:tramo.delivery||0,
+          fecha: ym===v.tramos[0].ym ? v.fecha : ym+'-01',
+          _tramoMes: ym
+        }));
+      }
+    } else {
+      if(ymOf(v.fecha)===ym) result.push(v);
+    }
+  });
+  return result;
+}
+function comprasDelMes(ym){ return data.compras.filter(function(c){return ymOf(c.fecha)===ym}); }
+function fijosDelMes(ym){
+  return data.fijos.map(function(concepto){
+    var pago=data.fijosPagos.find(function(p){return p.conceptoId===concepto.id&&p.mes===ym});
+    return {
+      id: pago?pago.id:null,
+      conceptoId: concepto.id,
+      concepto: concepto.concepto,
+      monto: pago?pago.monto:concepto.monto,
+      pagado: pago?!!pago.pagado:false,
+      mes: ym
+    };
+  });
+}
+function getOrCreatePago(conceptoId, ym){
+  var pago=data.fijosPagos.find(function(p){return p.conceptoId===conceptoId&&p.mes===ym});
+  if(!pago){
+    var concepto=data.fijos.find(function(c){return c.id===conceptoId});
+    pago={id:uid(),conceptoId:conceptoId,mes:ym,monto:concepto?concepto.monto:0,pagado:false};
+    data.fijosPagos.push(pago);
+  }
+  return pago;
+}
+
+function sum(arr,key){ return arr.reduce(function(a,b){return a+(parseFloat(b[key])||0)},0); }
+function sumDelivery(arr){ return arr.reduce(function(a,b){return a+(b.deliveryPagado?0:(parseFloat(b.delivery)||0))},0); }
+
+function estadoResultados(ym){
+  var ventas=ventasDelMes(ym);
+  var compras=comprasDelMes(ym);
+  var fijos=fijosDelMes(ym);
+
+  var ingresos = sum(ventas,'monto');
+
+  // costo de ventas = compras de categoría "Ingredientes" + "Packaging / Envases" (costo variable directo)
+  var costoVariableCats=['Ingredientes','Packaging / Envases'];
+  var costoVentas = sum(compras.filter(function(c){return costoVariableCats.includes(c.categoria)}),'monto');
+
+  var utilidadBruta = ingresos - costoVentas;
+
+  // gastos operativos = otras compras (no costo variable) + fijos
+  var gastosCompras = sum(compras.filter(function(c){return !costoVariableCats.includes(c.categoria)}),'monto');
+  var gastosFijos = sum(fijos,'monto');
+  var gastosOperativos = gastosCompras + gastosFijos;
+
+  var utilidadOperativa = utilidadBruta - gastosOperativos;
+
+  return {
+    ingresos:ingresos, costoVentas:costoVentas, utilidadBruta:utilidadBruta,
+    gastosCompras:gastosCompras, gastosFijos:gastosFijos, gastosOperativos:gastosOperativos,
+    utilidadOperativa:utilidadOperativa,
+    margenBruto: ingresos? (utilidadBruta/ingresos*100):0,
+    margenNeto: ingresos? (utilidadOperativa/ingresos*100):0,
+    ventas:ventas, compras:compras, fijos:fijos,
+    deliveryPendienteTotal: sumDelivery(ventas)
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════
+// DASHBOARD - ESTADO DE RESULTADOS
+// ════════════════════════════════════════════════════════════════════
+var dashMonth = todayYM();
+function renderDashboard(){
+  var er = estadoResultados(dashMonth);
+  var catBreak = {};
+  er.compras.forEach(function(c){ catBreak[c.categoria]=(catBreak[c.categoria]||0)+parseFloat(c.monto||0); });
+
+  var h = '<h2 class="page-title">Estado de resultados</h2>';
+  h += '<div class="page-sub">Resumen mensual de ingresos, costos y rentabilidad</div>';
+
+  h += '<div class="toolbar"><div class="toolbar-left"><label style="font-size:13px;color:#888780;font-weight:600">Mes:</label>'+monthSelector('dash-month',dashMonth,'changeDashMonth()')+'</div></div>';
+
+  h += '<div class="metrics">'+
+    '<div class="metric m-green"><div class="lbl">Ingresos</div><div class="val">'+fmtGs(er.ingresos)+'</div></div>'+
+    '<div class="metric m-red"><div class="lbl">Costo de ventas</div><div class="val">'+fmtGs(er.costoVentas)+'</div></div>'+
+    '<div class="metric m-blue"><div class="lbl">Utilidad bruta</div><div class="val">'+fmtGs(er.utilidadBruta)+'</div><div class="sub">Margen '+fmtPct(er.margenBruto)+'</div></div>'+
+    '<div class="metric m-amber"><div class="lbl">Gastos operativos</div><div class="val">'+fmtGs(er.gastosOperativos)+'</div></div>'+
+    '<div class="metric '+(er.utilidadOperativa>=0?'m-green':'m-red')+'"><div class="lbl">Resultado neto</div><div class="val">'+fmtGs(er.utilidadOperativa)+'</div><div class="sub">Margen '+fmtPct(er.margenNeto)+'</div></div>'+
+  '</div>';
+
+  h += '<div class="grid2">';
+
+  // Estado de resultados detallado
+  h += '<div class="card">';
+  h += '<div class="section-title">Detalle — '+monthLabel(dashMonth)+'</div>';
+  h += '<div class="row-flex"><span>Ingresos por ventas</span><span class="v-pos">'+fmtGs(er.ingresos)+'</span></div>';
+  h += '<div class="row-flex indent"><span>(–) Costo de ventas (ingredientes y packaging)</span><span class="v-neg">'+fmtGs(er.costoVentas)+'</span></div>';
+  h += '<div class="row-flex total"><span>Utilidad bruta</span><span>'+fmtGs(er.utilidadBruta)+'</span></div>';
+  h += '<div class="row-flex indent"><span>(–) Otros gastos / compras operativas</span><span class="v-neg">'+fmtGs(er.gastosCompras)+'</span></div>';
+  h += '<div class="row-flex indent"><span>(–) Costos fijos del mes</span><span class="v-neg">'+fmtGs(er.gastosFijos)+'</span></div>';
+  h += '<div class="row-flex total"><span>Resultado neto</span><span class="'+(er.utilidadOperativa>=0?'v-pos':'v-neg')+'">'+fmtGs(er.utilidadOperativa)+'</span></div>';
+  var deliveryMes=sum(er.ventas,'delivery');
+  if(deliveryMes>0){
+    h += '<div class="row-flex" style="margin-top:10px;border-top:1px dashed #e8e8e5;padding-top:10px"><span style="color:#888780">+ Delivery a transferir (no es ingreso)</span><span style="color:#888780">'+fmtGs(deliveryMes)+'</span></div>';
+    h += '<div class="row-flex"><span style="color:#888780">Total que debería entrar al banco</span><span style="color:#888780">'+fmtGs(er.ingresos+deliveryMes)+'</span></div>';
+  }
+  h += '</div>';
+
+  // Desglose por categoría de compra
+  h += '<div class="card">';
+  h += '<div class="section-title">Compras por categoría</div>';
+  var catKeys=Object.keys(catBreak).sort(function(a,b){return catBreak[b]-catBreak[a]});
+  if(!catKeys.length){
+    h += '<div style="color:#aaa;font-size:13px;padding:8px 0">Sin compras registradas este mes.</div>';
+  } else {
+    var maxVal=Math.max.apply(null,catKeys.map(function(k){return catBreak[k]}));
+    catKeys.forEach(function(k){
+      var pct=maxVal? (catBreak[k]/maxVal*100):0;
+      h+='<div class="bar-row"><span class="bar-label">'+k+'</span><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%"></div></div><span class="bar-val">'+fmtGs(catBreak[k])+'</span></div>';
+    });
+  }
+  h += '</div>';
+
+  h += '</div>'; // grid2
+
+  // Tendencia últimos meses
+  var months=allMonths().slice(-6);
+  h += '<div class="section-title" style="margin-top:22px">Tendencia (últimos meses)</div>';
+  h += '<div class="card">';
+  h += '<table><thead><tr><th>Mes</th><th class="num">Ingresos</th><th class="num">Costo de ventas</th><th class="num">Utilidad bruta</th><th class="num">Gastos operativos</th><th class="num">Resultado neto</th><th class="num">Margen neto</th></tr></thead><tbody>';
+  months.forEach(function(m){
+    var e=estadoResultados(m);
+    h+='<tr><td>'+monthLabel(m)+'</td><td class="num">'+fmtGs(e.ingresos)+'</td><td class="num">'+fmtGs(e.costoVentas)+'</td><td class="num">'+fmtGs(e.utilidadBruta)+'</td><td class="num">'+fmtGs(e.gastosOperativos)+'</td><td class="num '+(e.utilidadOperativa>=0?'':'style="color:#A32D2D"')+'">'+fmtGs(e.utilidadOperativa)+'</td><td class="num">'+fmtPct(e.margenNeto)+'</td></tr>';
+  });
+  h += '</tbody></table>';
+  h += '</div>';
+
+  document.getElementById('main').innerHTML=h;
+}
+function changeDashMonth(){ dashMonth=document.getElementById('dash-month').value; renderDashboard(); }
+
+// ════════════════════════════════════════════════════════════════════
+// RENTABILIDAD
+// ════════════════════════════════════════════════════════════════════
+var rentMonth = todayYM();
+function renderRentabilidad(){
+  var ventas=ventasDelMes(rentMonth);
+  var er=estadoResultados(rentMonth);
+
+  var h = '<h2 class="page-title">Rentabilidad</h2>';
+  h += '<div class="page-sub">Análisis de rentabilidad por plan y evolución de márgenes</div>';
+  h += '<div class="toolbar"><div class="toolbar-left"><label style="font-size:13px;color:#888780;font-weight:600">Mes:</label>'+monthSelector('rent-month',rentMonth,'changeRentMonth()')+'</div></div>';
+
+  h += '<div class="metrics">'+
+    '<div class="metric m-blue"><div class="lbl">Margen bruto</div><div class="val">'+fmtPct(er.margenBruto)+'</div></div>'+
+    '<div class="metric '+(er.margenNeto>=0?'m-green':'m-red')+'"><div class="lbl">Margen neto</div><div class="val">'+fmtPct(er.margenNeto)+'</div></div>'+
+    '<div class="metric m-gray"><div class="lbl">Ventas registradas</div><div class="val">'+ventas.length+'</div></div>'+
+  '</div>';
+
+  // Rentabilidad por plan
+  var byPlan={};
+  ventas.forEach(function(v){
+    var key=v.plan||'Sin plan';
+    if(!byPlan[key]) byPlan[key]={ingresos:0,cantidad:0};
+    byPlan[key].ingresos+=parseFloat(v.monto||0);
+    byPlan[key].cantidad+=1;
+  });
+  var planKeys=Object.keys(byPlan).sort(function(a,b){return byPlan[b].ingresos-byPlan[a].ingresos});
+
+  // costo de ventas proporcional al ingreso (estimación simple)
+  h += '<div class="section-title">Rentabilidad por plan</div>';
+  h += '<div class="card">';
+  if(!planKeys.length){
+    h += '<div style="color:#aaa;font-size:13px;padding:8px 0">Sin ventas registradas este mes.</div>';
+  } else {
+    h += '<table><thead><tr><th>Plan</th><th class="num">Cantidad vendida</th><th class="num">Ingresos</th><th class="num">% del total</th><th class="num">Costo de ventas estimado</th><th class="num">Margen estimado</th></tr></thead><tbody>';
+    planKeys.forEach(function(k){
+      var pInfo=byPlan[k];
+      var pctTotal=er.ingresos? (pInfo.ingresos/er.ingresos*100):0;
+      var costoEstimado = er.ingresos? (er.costoVentas * (pInfo.ingresos/er.ingresos)) : 0;
+      var margenEstimado = pInfo.ingresos? ((pInfo.ingresos-costoEstimado)/pInfo.ingresos*100):0;
+      h+='<tr><td>'+planBadgeFor(k)+'</td><td class="num">'+pInfo.cantidad+'</td><td class="num">'+fmtGs(pInfo.ingresos)+'</td><td class="num">'+fmtPct(pctTotal)+'</td><td class="num">'+fmtGs(costoEstimado)+'</td><td class="num">'+fmtPct(margenEstimado)+'</td></tr>';
+    });
+    h += '</tbody></table>';
+    h += '<div style="font-size:11px;color:#aaa;margin-top:10px">El costo de ventas se distribuye proporcionalmente entre los planes según su participación en los ingresos del mes.</div>';
+  }
+  h += '</div>';
+
+  // Punto de equilibrio simple
+  var fijosM = sum(fijosDelMes(rentMonth),'monto');
+  var avgMargenPct = er.margenBruto/100;
+  var puntoEquilibrio = avgMargenPct>0 ? (fijosM/avgMargenPct) : 0;
+
+  h += '<div class="section-title">Punto de equilibrio del mes</div>';
+  h += '<div class="card">';
+  h += '<div class="row-flex"><span>Costos fijos del mes</span><span>'+fmtGs(fijosM)+'</span></div>';
+  h += '<div class="row-flex"><span>Margen bruto actual</span><span>'+fmtPct(er.margenBruto)+'</span></div>';
+  h += '<div class="row-flex total"><span>Ingresos necesarios para cubrir costos fijos</span><span>'+(avgMargenPct>0?fmtGs(puntoEquilibrio):'—')+'</span></div>';
+  h += '<div class="row-flex"><span>Ingresos actuales</span><span class="'+(er.ingresos>=puntoEquilibrio?'v-pos':'v-neg')+'">'+fmtGs(er.ingresos)+'</span></div>';
+  if(avgMargenPct>0){
+    var diff=er.ingresos-puntoEquilibrio;
+    h += '<div class="row-flex"><span>'+(diff>=0?'Por encima del punto de equilibrio':'Falta para alcanzar el punto de equilibrio')+'</span><span class="'+(diff>=0?'v-pos':'v-neg')+'">'+fmtGs(Math.abs(diff))+'</span></div>';
+  }
+  h += '</div>';
+
+  // Evolución de márgenes
+  var months=allMonths().slice(-6);
+  h += '<div class="section-title">Evolución de márgenes</div>';
+  h += '<div class="card">';
+  h += '<table><thead><tr><th>Mes</th><th class="num">Ingresos</th><th class="num">Margen bruto</th><th class="num">Margen neto</th></tr></thead><tbody>';
+  months.forEach(function(m){
+    var e=estadoResultados(m);
+    h+='<tr><td>'+monthLabel(m)+'</td><td class="num">'+fmtGs(e.ingresos)+'</td><td class="num">'+fmtPct(e.margenBruto)+'</td><td class="num">'+fmtPct(e.margenNeto)+'</td></tr>';
+  });
+  h += '</tbody></table></div>';
+
+  document.getElementById('main').innerHTML=h;
+}
+function changeRentMonth(){ rentMonth=document.getElementById('rent-month').value; renderRentabilidad(); }
+function planBadgeFor(nombre){
+  var n=nombre.toUpperCase();
+  var cls='b-personal';
+  if(n.includes('PERSONAL')) cls='b-personal';
+  else if(n.includes('MENSUAL')) cls='b-mensual';
+  else if(n.includes('SEMANAL')) cls='b-semanal';
+  else if(n.includes('PRUEBA')) cls='b-prueba';
+  return '<span class="badge '+cls+'">'+nombre+'</span>';
+}
+
+// ════════════════════════════════════════════════════════════════════
+// LIBRO DE VENTAS
+// ════════════════════════════════════════════════════════════════════
+function renderVentas(){
+  var h = '<h2 class="page-title">Libro de ventas</h2>';
+  h += '<div class="page-sub">Registro de todas las ventas de suscripciones</div>';
+
+  h += '<div class="toolbar"><div class="toolbar-left">'+
+    '<input type="text" id="v-search" placeholder="Buscar cliente..." oninput="renderVentas()" value="'+(window._vSearch||'')+'">'+
+    '<select id="v-month" onchange="renderVentas()"><option value="">Todos los meses</option>'+allMonths().map(function(m){return '<option value="'+m+'" '+(window._vMonth===m?'selected':'')+'>'+monthLabel(m)+'</option>'}).join('')+'</select>'+
+  '</div><button class="btn btn-green" onclick="abrirVentaModal()">+ Nueva venta</button></div>';
+
+  var search=(document.getElementById('v-search')||{}).value||'';
+  var monthF=(document.getElementById('v-month')||{}).value||'';
+  window._vSearch=search; window._vMonth=monthF;
+
+  var mesParaTotal = monthF;
+  if(!mesParaTotal){
+    var mesesV=data.ventas.map(function(v){return ymOf(v.fecha)}).sort().reverse();
+    mesParaTotal = mesesV.length ? mesesV[0] : todayYM();
+  }
+  var totalMes = sum(ventasDelMes(mesParaTotal),'monto');
+  var labelMesV = monthLabel(mesParaTotal);
+  var deliveryPendiente = sumDelivery(data.ventas);
+  var list;
+  if(monthF){
+    // Usar ventasDelMes para respetar devengamiento
+    list=ventasDelMes(monthF).slice().sort(function(a,b){return b.fecha.localeCompare(a.fecha)});
+    if(search) list=list.filter(function(v){return v.cliente.toLowerCase().includes(search.toLowerCase())});
+  } else {
+    list=data.ventas.slice().sort(function(a,b){return b.fecha.localeCompare(a.fecha)});
+    if(search) list=list.filter(function(v){return v.cliente.toLowerCase().includes(search.toLowerCase())});
+  }
+  var totalFiltro = sum(list,'monto');
+
+  h += '<div class="metrics">'+
+    '<div class="metric m-green"><div class="lbl">Total '+(labelMesV||'')+'</div><div class="val">'+fmtGs(totalMes)+'</div></div>'+
+    '<div class="metric m-amber"><div class="lbl">Pendiente delivery</div><div class="val">'+fmtGs(deliveryPendiente)+'</div></div>'+
+    '<div class="metric m-gray"><div class="lbl">Total filtro actual</div><div class="val">'+fmtGs(totalFiltro)+'</div></div>'+
+    '<div class="metric m-gray"><div class="lbl">Registradas (total)</div><div class="val">'+data.ventas.length+'</div></div>'+
+  '</div>';
+
+  if(!list.length){
+    h += '<div class="empty">No hay ventas registradas con esos filtros.</div>';
+  } else {
+    h += '<table><thead><tr><th>Fecha</th><th>Cliente</th><th>Plan</th><th class="num">Monto Yutri</th><th class="num">Delivery</th><th class="num">Total banco</th><th>Método de pago</th><th>Notas</th><th></th></tr></thead><tbody>';
+    list.forEach(function(v){
+      var delivery=parseFloat(v.delivery)||0;
+      var totalBanco=parseFloat(v.monto||0)+delivery;
+      var deliveryCell='—';
+      if(delivery>0){
+        deliveryCell=fmtGs(delivery)+' <span class="badge '+(v.deliveryPagado?'b-ingreso':'b-egreso')+'" style="cursor:pointer" onclick="toggleDeliveryPagado(\''+v.id+'\')">'+(v.deliveryPagado?'pagado':'pendiente')+'</span>';
+      }
+      var devBadge=v._esDevengado?'<span class="badge" style="background:#E8F7F2;color:#0F6E56;font-size:10px;margin-left:4px">📊 Devengado</span>':
+        (v.tramos&&v.tramos.length>1?' <span class="badge" style="background:#EBF5FB;color:#185FA5;font-size:10px" title="'+v.tramos.map(function(t){return monthLabel(t.ym)+': '+fmtGs(t.monto)+' ('+t.dias+' días)'}).join(' | ')+'">📊 '+v.tramos.map(function(t){return monthLabel(t.ym)+' '+fmtGs(t.monto)}).join(' | ')+'</span>':'');
+      var editBtn=v._esDevengado?'<span style="font-size:11px;color:#aaa">Auto</span>':'<button class="btn btn-sm" onclick="editVenta(\''+v.id+'\')">✏</button>';
+      h+='<tr'+(v._esDevengado?' style="background:#F0FAF6"':'')+'>'+
+        '<td class="nowrap">'+v.fecha+'</td><td>'+v.cliente+'</td>'+
+        '<td class="nowrap">'+(v.plan?planBadgeFor(v.plan):'—')+'</td>'+
+        '<td class="num">'+fmtGs(v.monto)+devBadge+'</td>'+
+        '<td class="num nowrap">'+deliveryCell+'</td>'+
+        '<td class="num">'+fmtGs(totalBanco)+'</td>'+
+        '<td class="nowrap">'+(v.metodo||'—')+'</td>'+
+        '<td style="font-size:12px;color:#888780">'+(v.notas||'')+'</td>'+
+        '<td class="nowrap">'+editBtn+' <button class="btn btn-sm btn-danger" onclick="delVenta(\''+v.id+'\')">🗑</button></td>'+
+        '</tr>';
+    });
+    var totalDeliveryFiltro=sum(list,'delivery');
+    var totalBancoFiltro=totalFiltro+totalDeliveryFiltro;
+    h+='<tr style="font-weight:700;background:#fafaf8"><td colspan="3">Total</td><td class="num">'+fmtGs(totalFiltro)+'</td><td class="num">'+fmtGs(totalDeliveryFiltro)+'</td><td class="num">'+fmtGs(totalBancoFiltro)+'</td><td colspan="3"></td></tr>';
+    h += '</tbody></table>';
+  }
+
+  document.getElementById('main').innerHTML=h;
+}
+
+// ── DEVENGAMIENTO (días hábiles lun-vie) ────────────────────────────────────
+function deliveriesEnRango(fechaInicio, fechaFin){
+  // Cuenta lunes, miércoles y viernes entre fechaInicio y fechaFin (inclusive)
+  var start=new Date(fechaInicio+'T00:00:00');
+  var end=new Date(fechaFin+'T00:00:00');
+  var count=0;
+  var d=new Date(start);
+  while(d<=end){
+    var dow=d.getDay();
+    if(dow===1||dow===3||dow===5) count++;
+    d.setDate(d.getDate()+1);
+  }
+  return count;
+}
+function calcDevengamientoDelivery(fechaInicio, totalDiasHabil, montoDelivery){
+  // Distribuye el delivery según cuántos lun/mié/vie caen en cada mes
+  if(!montoDelivery) return [{ym:ymOf(fechaInicio),delivery:0}];
+  var ymInicio=ymOf(fechaInicio);
+  var y=parseInt(ymInicio.slice(0,4)),mo=parseInt(ymInicio.slice(5,7));
+
+  // Calcular fecha fin aproximada del plan (totalDiasHabil días hábiles desde inicio)
+  var d=new Date(fechaInicio+'T00:00:00');
+  var contados=0;
+  while(contados<totalDiasHabil){
+    var dow=d.getDay();
+    if(dow>=1&&dow<=5) contados++;
+    if(contados<totalDiasHabil) d.setDate(d.getDate()+1);
+  }
+  var fechaFin=d.toISOString().slice(0,10);
+
+  // Fin del mes de inicio
+  var finMesInicio=new Date(y,mo,0).toISOString().slice(0,10);
+  var delEste=deliveriesEnRango(fechaInicio, finMesInicio<fechaFin?finMesInicio:fechaFin);
+  var delTotal=deliveriesEnRango(fechaInicio, fechaFin);
+  if(delTotal===0) return [{ym:ymInicio,delivery:montoDelivery}];
+
+  var montoEste=Math.round(montoDelivery*(delEste/delTotal));
+  var montoSig=montoDelivery-montoEste;
+  var result=[{ym:ymInicio,delivery:montoEste,deliveries:delEste}];
+  if(montoSig>0){
+    var ymSig=(mo===12?y+1:y)+'-'+String(mo===12?1:mo+1).padStart(2,'0');
+    result.push({ym:ymSig,delivery:montoSig,deliveries:delTotal-delEste});
+  }
+  return result;
+}
+function diasHabilesEnMes(ym){
+  // Cuenta lunes a viernes en el mes ym
+  var y=parseInt(ym.slice(0,4)),m=parseInt(ym.slice(5,7));
+  var d=new Date(y,m-1,1);
+  var count=0;
+  while(d.getMonth()===m-1){
+    var dow=d.getDay();
+    if(dow>=1&&dow<=5) count++;
+    d.setDate(d.getDate()+1);
+  }
+  return count;
+}
+function diasHabilesDesde(fechaInicio, ym){
+  // Días hábiles desde fechaInicio hasta fin del mes ym (inclusive)
+  var y=parseInt(ym.slice(0,4)),m=parseInt(ym.slice(5,7));
+  var start=new Date(fechaInicio+'T00:00:00');
+  var ymStart=ymOf(fechaInicio);
+  // Si el inicio es de un mes diferente, contar todo el mes
+  if(ymStart!==ym) return diasHabilesEnMes(ym);
+  var endOfMonth=new Date(y,m,0); // último día del mes
+  var count=0;
+  var d=new Date(start);
+  while(d<=endOfMonth){
+    var dow=d.getDay();
+    if(dow>=1&&dow<=5) count++;
+    d.setDate(d.getDate()+1);
+  }
+  return count;
+}
+function primerDiaMesSiguiente(ym){
+  var y=parseInt(ym.slice(0,4)),m=parseInt(ym.slice(5,7));
+  if(m===12){y++;m=1;}else{m++;}
+  return y+'-'+String(m).padStart(2,'0')+'-01';
+}
+function calcDevengamientoHabil(fechaInicio, totalDiasHabil, montoTotal, montoDelivery){
+  var ymInicio=ymOf(fechaInicio);
+  var diasEnEste=diasHabilesDesde(fechaInicio, ymInicio);
+  var diasEste=Math.min(diasEnEste, totalDiasHabil);
+  var diasSig=totalDiasHabil-diasEste;
+  var montoEste=Math.round(montoTotal*(diasEste/totalDiasHabil));
+  var montoSig=montoTotal-montoEste;
+
+  // Delivery tramos
+  var delTramos=montoDelivery>0?calcDevengamientoDelivery(fechaInicio,totalDiasHabil,montoDelivery):[];
+
+  var result=[{ym:ymInicio, monto:montoEste, dias:diasEste,
+    delivery:delTramos.length>0?delTramos[0].delivery:0,
+    deliveries:delTramos.length>0?delTramos[0].deliveries:0}];
+  if(diasSig>0){
+    var y=parseInt(ymInicio.slice(0,4)),m=parseInt(ymInicio.slice(5,7));
+    if(m===12){y++;m=1;}else{m++;}
+    var ymSig=y+'-'+String(m).padStart(2,'0');
+    result.push({ym:ymSig, monto:montoSig, dias:diasSig,
+      delivery:delTramos.length>1?delTramos[1].delivery:0,
+      deliveries:delTramos.length>1?delTramos[1].deliveries:0});
+  }
+  return result;
+}
+function previewDevengamiento(){
+  var inicio=document.getElementById('mv-inicio')?document.getElementById('mv-inicio').value:'';
+  var monto=parseFloat((document.getElementById('mv-monto')||{}).value)||0;
+  var delivery=parseFloat((document.getElementById('mv-delivery')||{}).value)||0;
+  var sel=document.getElementById('mv-plan');
+  var opt=sel?sel.options[sel.selectedIndex]:null;
+  var diasPlan=opt?parseInt(opt.getAttribute('data-dias'))||0:0;
+  var div=document.getElementById('mv-devengamiento-preview');
+  if(!div)return;
+  if(!inicio||!monto||!diasPlan){div.innerHTML='';return}
+  var tramos=calcDevengamientoHabil(inicio,diasPlan,monto,delivery);
+  if(tramos.length<=1){
+    div.innerHTML='<div style="font-size:12px;color:#888780">✅ Plan completo dentro de '+monthLabel(tramos[0]?tramos[0].ym:ymOf(inicio))+' — sin devengamiento.</div>';
+    return;
+  }
+  var html='<div style="font-size:12px;font-weight:700;color:#185FA5;margin-bottom:6px">📊 Devengamiento automático (días hábiles):</div>';
+  tramos.forEach(function(t,i){
+    html+='<div style="font-size:13px;display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #dde">'+
+      '<span>'+monthLabel(t.ym)+' <span style="font-size:11px;color:#aaa">('+t.dias+' días háb.'+(t.deliveries?', '+t.deliveries+' deliveries':'')+')</span>'+(i===1?' <span style="font-size:10px;background:#E8F7F2;color:#1D9E75;padding:1px 6px;border-radius:4px;font-weight:600">→ registro automático</span>':'')+'</span>'+
+      '<span style="font-weight:700;font-size:14px">'+fmtGs(t.monto)+(t.delivery?' <span style="font-size:11px;color:#888780">+ Gs '+t.delivery.toLocaleString('es-PY')+' delivery</span>':'')+'</span>'+
+    '</div>';
+  });
+  div.innerHTML=html;
+}
+function crearRegistroDevengado(ventaOriginal, tramo){
+  var fechaReg=primerDiaMesSiguiente(ymOf(ventaOriginal.fecha));
+  var yaExiste=data.ventas.find(function(v){
+    return v.devengadoDe===ventaOriginal.id && ymOf(v.fecha)===tramo.ym;
+  });
+  if(yaExiste){
+    yaExiste.monto=tramo.monto;
+    yaExiste.delivery=tramo.delivery||0;
+    return;
+  }
+  data.ventas.push({
+    id:uid(),
+    fecha:fechaReg,
+    cliente:ventaOriginal.cliente,
+    plan:ventaOriginal.plan,
+    monto:tramo.monto,
+    delivery:tramo.delivery||0,
+    deliveryPagado:false,
+    metodo:ventaOriginal.metodo,
+    notas:'Devengado de '+monthLabel(ymOf(ventaOriginal.fecha)),
+    devengadoDe:ventaOriginal.id,
+    _esDevengado:true
+  });
+}
+
+function abrirVentaModal(id){
+  var v = id ? data.ventas.find(function(x){return x.id===id}) : null;
+  // No mostrar ventas devengadas automáticas en edición directa
+  if(v&&v._esDevengado) return;
+  var planOptions='<option value="">— sin plan —</option>'+data.planes.map(function(p){return '<option value="'+p.nombre+'" data-precio="'+p.precio+'" data-dias="'+p.dias+'" '+(v&&v.plan===p.nombre?'selected':'')+'>'+p.nombre+' — '+fmtGs(p.precio)+'</option>'}).join('');
+  var h = '<h2>'+(v?'Editar venta':'Nueva venta')+'</h2>';
+  h += '<div class="fgrid">';
+  h += '<div class="fg"><label>Fecha de cobro</label><input type="date" id="mv-fecha" value="'+(v?v.fecha:todayISO())+'"></div>';
+  h += '<div class="fg"><label>Inicio del plan</label><input type="date" id="mv-inicio" value="'+(v?v.planInicio||v.fecha:todayISO())+'" oninput="previewDevengamiento()"></div>';
+  h += '<div class="fg"><label>Cliente</label><select id="mv-cliente">'+
+    '<option value="">— seleccionar —</option>'+
+    data.clientes.map(function(cl){return '<option '+(v&&v.cliente===cl?'selected':'')+'>'+cl+'</option>'}).join('')+
+    (v&&v.cliente&&!data.clientes.includes(v.cliente)?'<option selected>'+v.cliente+'</option>':'')+
+    '<option value="__nuevo__">+ Nuevo cliente...</option></select></div>';
+  h += '<div class="fg"><label>Plan</label><select id="mv-plan" onchange="autoPrecioVenta()">'+planOptions+'</select></div>';
+  h += '<div class="fg full" id="mv-cliente-nuevo-wrap" style="display:none"><label>Nombre del nuevo cliente</label><input type="text" id="mv-cliente-nuevo" placeholder="Nombre del cliente"></div>';
+  h += '<div class="fg"><label>Monto Yutri (Gs)</label><input type="number" id="mv-monto" value="'+(v?v.monto:'')+'" oninput="previewDevengamiento()"></div>';
+  h += '<div class="fg"><label>Delivery a transferir (Gs)</label><input type="number" id="mv-delivery" placeholder="0" value="'+(v?v.delivery||'':'')+'"></div>';
+  h += '<div class="fg full"><div id="mv-devengamiento-preview" style="background:#EBF5FB;border-radius:8px;padding:10px 12px;min-height:32px"></div></div>';
+  h += '<div class="fg full"><label style="display:flex;align-items:center;gap:6px;font-weight:400"><input type="checkbox" id="mv-delivery-pagado" '+(v&&v.deliveryPagado?'checked':'')+' style="width:auto"> Ya le pagué al delivery este monto</label></div>';
+  h += '<div class="fg"><label>Método de pago</label><select id="mv-metodo">'+
+    ['Efectivo','Transferencia','Tarjeta'].map(function(m){return '<option '+(v&&v.metodo===m?'selected':'')+'>'+m+'</option>'}).join('')+'</select></div>';
+  h += '<div class="fg full"><label>Notas</label><textarea id="mv-notas">'+(v?v.notas||'':'')+'</textarea></div>';
+  h += '</div>';
+  h += '<div class="modal-footer"><button class="btn" onclick="cerrarModal()">Cancelar</button><button class="btn btn-green" onclick="guardarVenta(\''+(v?v.id:'')+'\')">Guardar</button></div>';
+  document.getElementById('modal-body').innerHTML=h;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('mv-cliente').addEventListener('change',function(){
+    document.getElementById('mv-cliente-nuevo-wrap').style.display=(this.value==='__nuevo__')?'block':'none';
+  });
+  if(v&&v.planInicio) previewDevengamiento();
+}
+function calcFinPlan(){ previewDevengamiento(); }
+function autoPrecioVenta(){
+  var sel=document.getElementById('mv-plan');
+  var opt=sel.options[sel.selectedIndex];
+  var precio=opt.getAttribute('data-precio');
+  if(precio) document.getElementById('mv-monto').value=precio;
+  previewDevengamiento();
+}
+function guardarVenta(id){
+  var fecha=document.getElementById('mv-fecha').value;
+  var clienteSel=document.getElementById('mv-cliente').value;
+  var cliente=clienteSel;
+  if(clienteSel==='__nuevo__'){
+    cliente=document.getElementById('mv-cliente-nuevo').value.trim();
+    if(cliente && !data.clientes.includes(cliente)){
+      data.clientes.push(cliente);
+      data.clientes.sort();
+    }
+  }
+  var plan=document.getElementById('mv-plan').value;
+  var monto=parseFloat(document.getElementById('mv-monto').value)||0;
+  var delivery=parseFloat(document.getElementById('mv-delivery').value)||0;
+  var deliveryPagado=document.getElementById('mv-delivery-pagado').checked;
+  var metodo=document.getElementById('mv-metodo').value;
+  var notas=document.getElementById('mv-notas').value;
+  var planInicio=document.getElementById('mv-inicio').value||fecha;
+  if(!fecha||!cliente||!monto){alert('Completá fecha, cliente y monto.');return}
+
+  // Calcular devengamiento por días hábiles
+  var sel=document.getElementById('mv-plan');
+  var opt=sel?sel.options[sel.selectedIndex]:null;
+  var diasPlan=opt?parseInt(opt.getAttribute('data-dias'))||0:0;
+  var tramos=diasPlan>0?calcDevengamientoHabil(planInicio,diasPlan,monto,delivery):[];
+
+  var baseObj={fecha:fecha,cliente:cliente,plan:plan,
+    monto:tramos.length>0?tramos[0].monto:monto,
+    delivery:tramos.length>0?tramos[0].delivery:delivery,
+    montoTotal:monto,deliveryTotal:delivery,
+    deliveryPagado:deliveryPagado,metodo:metodo,notas:notas,
+    planInicio:planInicio,tramos:tramos};
+
+  var ventaId=id||uid();
+  if(id){
+    var v=data.ventas.find(function(x){return x.id===id});
+    Object.assign(v,baseObj);
+    // Eliminar devengados viejos de esta venta para recrearlos
+    data.ventas=data.ventas.filter(function(x){return x.devengadoDe!==id});
+  } else {
+    baseObj.id=ventaId;
+    data.ventas.push(baseObj);
+  }
+
+  // Crear registro automático en el mes siguiente si hay devengamiento
+  if(tramos.length>1){
+    crearRegistroDevengado({id:ventaId,cliente:cliente,plan:plan,metodo:metodo,fecha:fecha},tramos[1]);
+  }
+
+  saveData();cerrarModal();renderVentas();
+}
+function editVenta(id){ abrirVentaModal(id); }
+function toggleDeliveryPagado(id){
+  var v=data.ventas.find(function(x){return x.id===id});
+  if(!v)return;
+  v.deliveryPagado=!v.deliveryPagado;
+  saveData();renderVentas();
+}
+function delVenta(id){
+  if(!confirm('¿Eliminar esta venta?'))return;
+  data.ventas=data.ventas.filter(function(x){return x.id!==id});
+  saveData();renderVentas();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// LIBRO DE COMPRAS
+// ════════════════════════════════════════════════════════════════════
+function renderCompras(){
+  var h = '<h2 class="page-title">Libro de compras</h2>';
+  h += '<div class="page-sub">Registro de todos los egresos por categoría y proveedor</div>';
+
+  h += '<div class="toolbar"><div class="toolbar-left">'+
+    '<input type="text" id="c-search" placeholder="Buscar proveedor..." oninput="renderCompras()" value="'+(window._cSearch||'')+'">'+
+    '<select id="c-month" onchange="renderCompras()"><option value="">Todos los meses</option>'+allMonths().map(function(m){return '<option value="'+m+'" '+(window._cMonth===m?'selected':'')+'>'+monthLabel(m)+'</option>'}).join('')+'</select>'+
+    '<select id="c-cat" onchange="renderCompras()"><option value="">Todas las categorías</option>'+data.categoriasCompra.map(function(c){return '<option value="'+c+'" '+(window._cCat===c?'selected':'')+'>'+c+'</option>'}).join('')+'</select>'+
+  '</div><button class="btn btn-green" onclick="abrirCompraModal()">+ Nueva compra</button></div>';
+
+  var search=(document.getElementById('c-search')||{}).value||'';
+  var monthF=(document.getElementById('c-month')||{}).value||'';
+  var catF=(document.getElementById('c-cat')||{}).value||'';
+  window._cSearch=search; window._cMonth=monthF; window._cCat=catF;
+
+  var mesParaTotal = monthF;
+  if(!mesParaTotal){
+    var meses=data.compras.map(function(c){return ymOf(c.fecha)}).sort().reverse();
+    mesParaTotal = meses.length ? meses[0] : todayYM();
+  }
+  var totalMes = sum(comprasDelMes(mesParaTotal),'monto');
+  var labelMes = monthLabel(mesParaTotal);
+
+  var list=data.compras.slice().sort(function(a,b){return b.fecha.localeCompare(a.fecha)});
+  if(search) list=list.filter(function(c){return (c.proveedor||'').toLowerCase().includes(search.toLowerCase())});
+  if(monthF) list=list.filter(function(c){return ymOf(c.fecha)===monthF});
+  if(catF) list=list.filter(function(c){return c.categoria===catF});
+
+  // Calcular promedio de costo/cliente/día de las compras de ingredientes con datos
+  var totalMesFiltrado = sum(list,'monto');
+  var ingrConDatos = list.filter(function(c){return c.categoria&&c.categoria.includes('Ingrediente')&&c.costoPorClienteDia});
+  var promedioMes = ingrConDatos.length ? Math.round(ingrConDatos.reduce(function(a,c){return a+c.costoPorClienteDia},0)/ingrConDatos.length) : 0;
+  var objetivo = 33000;
+  var diffProm = promedioMes - objetivo;
+  var colorProm = diffProm<=0?'#1D9E75':diffProm<=3000?'#BA7517':'#A32D2D';
+
+  h += '<div class="metrics">'+
+    '<div class="metric m-red"><div class="lbl">Total '+labelMes+'</div><div class="val">'+fmtGs(totalMes)+'</div></div>'+
+    '<div class="metric m-gray"><div class="lbl">Total filtro actual</div><div class="val">'+fmtGs(totalMesFiltrado)+'</div></div>'+
+    (promedioMes?'<div class="metric" style="border-left:3px solid '+colorProm+'"><div class="lbl">Promedio costo/cliente/día</div><div class="val" style="color:'+colorProm+'">'+fmtGs(promedioMes)+'<span style="font-size:12px;font-weight:400;color:'+colorProm+'">'+(diffProm>0?' +':'')+(diffProm?diffProm.toLocaleString('es-PY')+' vs obj':' ✅ ok')+'</span></div></div>':'')+
+    '<div class="metric m-gray"><div class="lbl">Compras registradas (total)</div><div class="val">'+data.compras.length+'</div></div>'+
+  '</div>';
+
+  if(!list.length){
+    h += '<div class="empty">No hay compras registradas con esos filtros.</div>';
+  } else {
+    h += '<table><thead><tr><th>Fecha</th><th>Categoría</th><th>Proveedor</th><th class="num">Monto</th><th class="num">Gs/cliente/día</th><th>Descripción</th><th></th></tr></thead><tbody>';
+    list.forEach(function(c){
+      var costoCell='—';
+      if(c.costoPorClienteDia){
+        var diff=c.costoPorClienteDia-objetivo;
+        var col=diff<=0?'#1D9E75':diff<=3000?'#BA7517':'#A32D2D';
+        costoCell='<span style="font-weight:700;color:'+col+'">'+fmtGs(c.costoPorClienteDia)+'</span>'+
+          '<br><span style="font-size:10px;color:#aaa">'+c.clientes+' cli × '+c.diasMenu+'d</span>';
+      }
+      h+='<tr><td class="nowrap">'+c.fecha+'</td><td class="nowrap"><span class="badge b-cat">'+c.categoria+'</span></td><td>'+(c.proveedor||'—')+'</td><td class="num">'+fmtGs(c.monto)+'</td><td class="num">'+costoCell+'</td><td style="font-size:12px;color:#888780">'+(c.descripcion||'')+'</td>'+
+        '<td class="nowrap"><button class="btn btn-sm" onclick="editCompra(\''+c.id+'\')">✏</button> <button class="btn btn-sm btn-danger" onclick="delCompra(\''+c.id+'\')">🗑</button></td></tr>';
+    });
+    var totalFiltro=sum(list,'monto');
+    h+='<tr style="font-weight:700;background:#fafaf8"><td colspan="3">Total</td><td class="num">'+fmtGs(totalFiltro)+'</td><td class="num" style="font-size:12px;color:'+colorProm+'">'+(promedioMes?'Prom: '+fmtGs(promedioMes):'')+'</td><td colspan="2"></td></tr>';
+    h += '</tbody></table>';
+    h += '<div style="font-size:11px;color:#aaa;margin-top:8px">El costo/cliente/día se calcula solo para compras de Ingredientes donde se ingresó cantidad de clientes y días. Objetivo: Gs 33.000.</div>';
+  }
+
+  document.getElementById('main').innerHTML=h;
+}
+function abrirCompraModal(id){
+  var c = id ? data.compras.find(function(x){return x.id===id}) : null;
+  var catOptions=data.categoriasCompra.map(function(cat){return '<option '+(c&&c.categoria===cat?'selected':'')+'>'+cat+'</option>'}).join('');
+  var esIngr = !c || (c.categoria||'').includes('Ingrediente');
+  var h = '<h2>'+(c?'Editar compra':'Nueva compra')+'</h2>';
+  h += '<div class="fgrid">';
+  h += '<div class="fg"><label>Fecha</label><input type="date" id="mc-fecha" value="'+(c?c.fecha:todayISO())+'"></div>';
+  h += '<div class="fg"><label>Categoría</label><select id="mc-cat" onchange="toggleCamposIngr()">'+catOptions+'</select></div>';
+  h += '<div class="fg"><label>Proveedor</label><select id="mc-prov"><option value="">— seleccionar —</option>'+data.proveedores.map(function(p){return '<option '+(c&&c.proveedor===p?'selected':'')+'>'+p+'</option>'}).join('')+'<option value="__nuevo__">+ Nuevo proveedor...</option></select></div>';
+  h += '<div class="fg full" id="mc-prov-nuevo-wrap" style="display:none"><label>Nombre del nuevo proveedor</label><input type="text" id="mc-prov-nuevo" placeholder="Nombre del proveedor"></div>';
+  h += '<div class="fg"><label>Monto (Gs)</label><input type="number" id="mc-monto" value="'+(c?c.monto:'')+'" oninput="calcCostoPorCliente()"></div>';
+  h += '<div id="mc-ingr-fields" style="display:'+(esIngr?'block':'none')+';grid-column:1/-1">';
+  h += '<div class="fgrid">';
+  h += '<div class="fg"><label>Clientes</label><input type="number" id="mc-clientes" value="'+(c&&c.clientes?c.clientes:'')+'" placeholder="ej: 14" min="1" oninput="calcCostoPorCliente()"></div>';
+  h += '<div class="fg"><label>Días que cubre</label><input type="number" id="mc-dias" value="'+(c&&c.diasMenu?c.diasMenu:2)+'" min="1" oninput="calcCostoPorCliente()"></div>';
+  h += '<div class="fg full"><div id="mc-costo-preview" style="background:#E8F7F2;border-radius:8px;padding:10px 12px;font-size:13px"></div></div>';
+  h += '</div>';
+  h += '</div>';
+  h += '<div class="fg full"><label>Descripción</label><textarea id="mc-desc">'+(c?c.descripcion||'':'')+'</textarea></div>';
+  h += '</div>';
+  h += '<div class="modal-footer"><button class="btn" onclick="cerrarModal()">Cancelar</button><button class="btn btn-green" onclick="guardarCompra(\''+(c?c.id:'')+'\')">Guardar</button></div>';
+  document.getElementById('modal-body').innerHTML=h;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('mc-prov').addEventListener('change',function(){
+    document.getElementById('mc-prov-nuevo-wrap').style.display=(this.value==='__nuevo__')?'block':'none';
+  });
+  if(c&&c.clientes) calcCostoPorCliente();
+}
+function toggleCamposIngr(){
+  var cat=document.getElementById('mc-cat').value;
+  var wrap=document.getElementById('mc-ingr-fields');
+  if(wrap) wrap.style.display=cat.includes('Ingrediente')?'block':'none';
+  calcCostoPorCliente();
+}
+function calcCostoPorCliente(){
+  var div=document.getElementById('mc-costo-preview');
+  if(!div) return;
+  var monto=parseFloat((document.getElementById('mc-monto')||{}).value)||0;
+  var clientes=parseFloat((document.getElementById('mc-clientes')||{}).value)||0;
+  var dias=parseFloat((document.getElementById('mc-dias')||{}).value)||2;
+  if(!monto||!clientes){div.innerHTML='<span style="color:#888780">Ingresá monto y clientes para ver el costo por cliente/día.</span>';return}
+  var costoPorClienteDia=Math.round(monto/(clientes*dias));
+  var obj=33000;
+  var diff=costoPorClienteDia-obj;
+  var color=diff<=0?'#1D9E75':diff<=3000?'#BA7517':'#A32D2D';
+  var label=diff<=0?'✅ Bajo el objetivo':'⚠ Sobre el objetivo';
+  div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center">'+
+    '<div><div style="font-size:11px;color:#888780">Costo por cliente/día</div>'+
+    '<div style="font-size:20px;font-weight:700;color:'+color+'">'+fmtGs(costoPorClienteDia)+'</div></div>'+
+    '<div style="text-align:right"><div style="font-size:11px;color:#888780">Objetivo: '+fmtGs(obj)+'</div>'+
+    '<div style="font-size:13px;font-weight:600;color:'+color+'">'+label+' ('+( diff>0?'+':'')+diff.toLocaleString('es-PY')+' Gs)</div></div>'+
+  '</div>'+
+  '<div style="font-size:11px;color:#888780;margin-top:4px">'+fmtGs(monto)+' ÷ ('+clientes+' clientes × '+dias+' días) = '+fmtGs(costoPorClienteDia)+'/cliente/día</div>';
+}
+function guardarCompra(id){
+  var fecha=document.getElementById('mc-fecha').value;
+  var categoria=document.getElementById('mc-cat').value;
+  var provSel=document.getElementById('mc-prov').value;
+  var proveedor=provSel;
+  if(provSel==='__nuevo__'){
+    proveedor=document.getElementById('mc-prov-nuevo').value.trim();
+    if(proveedor && !data.proveedores.includes(proveedor)){
+      data.proveedores.push(proveedor);
+      data.proveedores.sort();
+    }
+  }
+  var monto=parseFloat(document.getElementById('mc-monto').value)||0;
+  var descripcion=document.getElementById('mc-desc').value;
+  var clientes=parseFloat((document.getElementById('mc-clientes')||{}).value)||0;
+  var diasMenu=parseFloat((document.getElementById('mc-dias')||{}).value)||2;
+  var costoPorClienteDia=clientes>0?Math.round(monto/(clientes*diasMenu)):0;
+  if(!fecha||!monto){alert('Completá fecha y monto.');return}
+  var obj={fecha:fecha,categoria:categoria,proveedor:proveedor,monto:monto,descripcion:descripcion,
+    clientes:clientes||null,diasMenu:diasMenu||null,costoPorClienteDia:costoPorClienteDia||null};
+  if(id){
+    var c=data.compras.find(function(x){return x.id===id});
+    Object.assign(c,obj);
+  } else {
+    obj.id=uid();
+    data.compras.push(obj);
+  }
+  saveData();cerrarModal();renderCompras();
+}
+function editCompra(id){ abrirCompraModal(id); }
+function delCompra(id){
+  if(!confirm('¿Eliminar esta compra?'))return;
+  data.compras=data.compras.filter(function(x){return x.id!==id});
+  saveData();renderCompras();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// COSTOS FIJOS
+// ════════════════════════════════════════════════════════════════════
+var fijosMonth = todayYM();
+function renderFijos(){
+  var h = '<h2 class="page-title">Costos fijos</h2>';
+  h += '<div class="page-sub">Tus conceptos fijos quedan guardados siempre. Ajustá el monto si cambia y marcá cuáles ya pagaste cada mes.</div>';
+
+  var list=fijosDelMes(fijosMonth);
+  var totalMes=sum(list,'monto');
+  var pagados=list.filter(function(f){return f.pagado});
+  var totalPagado=sum(pagados,'monto');
+  var pendientes=list.filter(function(f){return !f.pagado});
+  var totalPendiente=sum(pendientes,'monto');
+
+  h += '<div class="metrics">'+
+    '<div class="metric m-amber"><div class="lbl">Total — '+monthLabel(fijosMonth)+'</div><div class="val">'+fmtGs(totalMes)+'</div></div>'+
+    '<div class="metric m-green"><div class="lbl">Pagado</div><div class="val">'+fmtGs(totalPagado)+'</div><div class="sub">'+pagados.length+' de '+list.length+'</div></div>'+
+    '<div class="metric m-red"><div class="lbl">Pendiente</div><div class="val">'+fmtGs(totalPendiente)+'</div><div class="sub">'+pendientes.length+' de '+list.length+'</div></div>'+
+  '</div>';
+
+  h += '<div class="toolbar"><div class="toolbar-left"><label style="font-size:13px;color:#888780;font-weight:600">Mes:</label>'+monthSelector('fijos-month',fijosMonth,'changeFijosMonth()')+
+  '</div><button class="btn btn-green" onclick="abrirFijoModal()">+ Nuevo concepto</button></div>';
+
+  if(!list.length){
+    h += '<div class="empty">No hay conceptos de costos fijos. Agregá el primero (ej: Alquiler, Sueldos, Bebedero...).</div>';
+  } else {
+    h += '<table><thead><tr><th style="width:36px"></th><th>Concepto</th><th class="num">Monto</th><th></th></tr></thead><tbody>';
+    list.forEach(function(f){
+      var rowStyle=f.pagado?'opacity:0.55':'';
+      h+='<tr style="'+rowStyle+'">'+
+        '<td><input type="checkbox" '+(f.pagado?'checked':'')+' onchange="togglePagado(\''+f.conceptoId+'\')" style="width:18px;height:18px;cursor:pointer" title="Marcar como pagado"></td>'+
+        '<td>'+f.concepto+(f.pagado?' <span class="badge b-ingreso">pagado</span>':' <span class="badge b-egreso">pendiente</span>')+'</td>'+
+        '<td class="num"><input type="number" value="'+f.monto+'" onchange="updateMontoFijo(\''+f.conceptoId+'\',this.value)" style="width:130px;text-align:right;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-family:Arial,sans-serif"></td>'+
+        '<td class="nowrap"><button class="btn btn-sm" onclick="editFijo(\''+f.conceptoId+'\')">✏ Renombrar</button> <button class="btn btn-sm btn-danger" onclick="delFijo(\''+f.conceptoId+'\')">🗑</button></td>'+
+        '</tr>';
+    });
+    h+='<tr style="font-weight:700;background:#fafaf8"><td></td><td>Total</td><td class="num">'+fmtGs(totalMes)+'</td><td></td></tr>';
+    h += '</tbody></table>';
+    h += '<div style="font-size:11px;color:#aaa;margin-top:10px">El check de "pagado" y el monto son específicos de '+monthLabel(fijosMonth)+'. El concepto se mantiene siempre disponible en todos los meses.</div>';
+  }
+  document.getElementById('main').innerHTML=h;
+}
+function changeFijosMonth(){ fijosMonth=document.getElementById('fijos-month').value; renderFijos(); }
+function togglePagado(conceptoId){
+  var pago=getOrCreatePago(conceptoId,fijosMonth);
+  pago.pagado=!pago.pagado;
+  saveData();renderFijos();
+}
+function updateMontoFijo(conceptoId,val){
+  var monto=parseFloat(val)||0;
+  var pago=getOrCreatePago(conceptoId,fijosMonth);
+  pago.monto=monto;
+  saveData();renderFijos();
+}
+function abrirFijoModal(id){
+  var f = id ? data.fijos.find(function(x){return x.id===id}) : null;
+  var h = '<h2>'+(f?'Editar concepto':'Nuevo concepto de costo fijo')+'</h2>';
+  h += '<div class="fgrid">';
+  h += '<div class="fg full"><label>Concepto</label><input type="text" id="mf-concepto" placeholder="ej: Alquiler local, Sueldo cocinera, Bebedero..." value="'+(f?f.concepto:'')+'"></div>';
+  h += '<div class="fg full"><label>Monto mensual habitual (Gs)</label><input type="number" id="mf-monto" value="'+(f?f.monto:'')+'"></div>';
+  h += '</div>';
+  if(!f) h += '<div style="font-size:12px;color:#888780;margin-top:8px">Este concepto va a aparecer todos los meses con este monto por defecto. Podés ajustarlo mes a mes si cambia.</div>';
+  h += '<div class="modal-footer"><button class="btn" onclick="cerrarModal()">Cancelar</button><button class="btn btn-green" onclick="guardarFijo(\''+(f?f.id:'')+'\')">Guardar</button></div>';
+  document.getElementById('modal-body').innerHTML=h;
+  document.getElementById('overlay').classList.add('open');
+}
+function guardarFijo(id){
+  var concepto=document.getElementById('mf-concepto').value.trim();
+  var monto=parseFloat(document.getElementById('mf-monto').value)||0;
+  if(!concepto||!monto){alert('Completá concepto y monto.');return}
+  if(id){
+    var f=data.fijos.find(function(x){return x.id===id});
+    f.concepto=concepto;
+  } else {
+    data.fijos.push({id:uid(),concepto:concepto,monto:monto});
+  }
+  saveData();cerrarModal();renderFijos();
+}
+function editFijo(id){ abrirFijoModal(id); }
+function delFijo(id){
+  if(!confirm('¿Eliminar este concepto de costo fijo? Se eliminará de todos los meses.'))return;
+  data.fijos=data.fijos.filter(function(x){return x.id!==id});
+  data.fijosPagos=data.fijosPagos.filter(function(x){return x.conceptoId!==id});
+  saveData();renderFijos();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// CONFIG: PLANES Y PRECIOS + CATEGORÍAS DE COMPRA
+// ════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════
+// COSTO POR CLIENTE
+// ════════════════════════════════════════════════════════════════════
+var CC_TIERS=[['prueba','Prueba'],['semanal','Semanal'],['mensual','Mensual']];
+function ccVal(path,tier){
+  var obj=data.costoCliente[path];
+  if(typeof obj==='object') return parseFloat(obj[tier])||0;
+  return parseFloat(obj)||0;
+}
+function ccInput(path,tier,extra){
+  var val= tier? ccVal(path,tier) : (parseFloat(data.costoCliente[path])||0);
+  var id='cc_'+path+(tier?'_'+tier:'');
+  return '<input type="number" id="'+id+'" value="'+val+'" onchange="ccUpdate(\''+path+'\','+(tier?'\''+tier+'\'':'null')+',this.value)" style="width:110px;text-align:right;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-family:Arial,sans-serif">';
+}
+function ccUpdate(path,tier,val){
+  var num=parseFloat(val)||0;
+  if(tier){ data.costoCliente[path][tier]=num; }
+  else { data.costoCliente[path]=num; }
+  saveData();renderCostoCliente();
+}
+function ccRow(label,path,opts){
+  opts=opts||{};
+  var h='<tr><td>'+label+'</td>';
+  CC_TIERS.forEach(function(t){
+    h+='<td class="num">'+ccInput(path,t[0])+'</td>';
+  });
+  return h+'</tr>';
+}
+function ccCalcRow(label,values,cls){
+  var h='<tr class="'+(cls||'')+'"><td>'+label+'</td>';
+  values.forEach(function(v){ h+='<td class="num">'+v+'</td>'; });
+  return h+'</tr>';
+}
+function ccBlock(title, comidaPath, bolsaPath, cajaPath, deliveryPath, comisionPath, preciosPath, options){
+  options=options||{};
+  var h='<div class="card">';
+  h+='<div class="section-title" style="margin-top:0">'+title+'</div>';
+  h+='<table><thead><tr><th></th>'+CC_TIERS.map(function(t){return '<th class="num">'+t[1]+'</th>'}).join('')+'</tr></thead><tbody>';
+  h+=ccRow('Comida',comidaPath);
+  h+=ccRow('Bolsa',bolsaPath);
+  h+=ccRow('Caja',cajaPath);
+  if(deliveryPath) h+=ccRow('Delivery incluido',deliveryPath);
+  if(comisionPath) h+=ccRow('Comisión',comisionPath);
+
+  var totales=[],margenes=[],margenesPct=[],precios=[];
+  CC_TIERS.forEach(function(t){
+    var tier=t[0];
+    var total=ccVal(comidaPath,tier)+ccVal(bolsaPath,tier)+ccVal(cajaPath,tier);
+    if(deliveryPath) total+=ccVal(deliveryPath,tier);
+    if(comisionPath) total+=ccVal(comisionPath,tier);
+    var precio=ccVal(preciosPath,tier);
+    var margen=precio-total;
+    var margenPct=precio? (margen/precio*100):0;
+    totales.push(fmtGs(total));
+    margenes.push('<span class="'+(margen>=0?'v-pos':'v-neg')+'">'+fmtGs(margen)+'</span>');
+    margenesPct.push('<span class="'+(margenPct>=0?'v-pos':'v-neg')+'">'+fmtPct(margenPct)+'</span>');
+    precios.push(ccInput(preciosPath,tier));
+  });
+  h+=ccCalcRow('TOTAL',totales,'total-row');
+  h+=ccCalcRow('Margen bruto por cliente',margenes);
+  h+=ccCalcRow('Margen bruto %',margenesPct);
+  h+=ccCalcRow('Precio del plan',precios);
+  h+='</tbody></table>';
+  h+='</div>';
+  return h;
+}
+function renderCostoCliente(){
+  var h = '<h2 class="page-title">Costo por cliente</h2>';
+  h += '<div class="page-sub">Ficha de costos y márgenes por plan. Todos los valores son editables — actualizalos cuando cambien tus costos.</div>';
+
+  h += '<div class="grid2">';
+  h += ccBlock('4 comidas diarias — Delivery incluido en el precio','comida4','bolsa4','caja4','deliveryIncluido',null,'precios4');
+  h += ccBlock('Solo almuerzo y cena — Delivery incluido en el precio','comidaAyC','bolsaAyC_conDelivery','cajaAyC','deliveryIncluido',null,'preciosAyC');
+  h += '</div>';
+
+  h += '<div class="grid2">';
+  h += ccBlock('4 comidas diarias — Sin delivery incluido','comida4','bolsa4','caja4',null,null,'precios4');
+  h += ccBlock('Solo almuerzo y cena — Sin delivery incluido','comidaAyC','bolsaAyC_conDelivery','cajaAyC',null,null,'preciosAyC');
+  h += '</div>';
+
+  h += '<div class="grid2">';
+  h += ccBlock('4 comidas diarias — Sin delivery, con comisión','comida4','bolsa4','caja4',null,'comision4','precios4');
+  h += ccBlock('Solo almuerzo y cena — Sin delivery, con comisión','comidaAyC','bolsaAyC_conDelivery','cajaAyC',null,'comisionAyC','preciosAyC');
+  h += '</div>';
+
+  // Costo por cliente diario
+  h += '<div class="section-title">Costo por cliente diario</div>';
+  h += '<div class="grid2">';
+
+  h += '<div class="card">';
+  h += '<div class="section-title" style="margin-top:0">Con delivery</div>';
+  h += '<table><tbody>';
+  h += '<tr><td>Delivery por día</td><td class="num">'+ccInput('deliveryDia')+'</td></tr>';
+  h += '<tr><td>Comida por día</td><td class="num">'+ccInput('comidaDia4')+'</td></tr>';
+  h += '<tr><td>Bolsa por día</td><td class="num">'+ccInput('bolsaDia4')+'</td></tr>';
+  h += '<tr><td>Caja por día</td><td class="num">'+ccInput('cajaDia4')+'</td></tr>';
+  var totalConDelivery=(parseFloat(data.costoCliente.deliveryDia)||0)+(parseFloat(data.costoCliente.comidaDia4)||0)+(parseFloat(data.costoCliente.bolsaDia4)||0)+(parseFloat(data.costoCliente.cajaDia4)||0);
+  h += '<tr class="total-row"><td>Total</td><td class="num">'+fmtGs(totalConDelivery)+'</td></tr>';
+  h += '</tbody></table></div>';
+
+  h += '<div class="card">';
+  h += '<div class="section-title" style="margin-top:0">Sin delivery</div>';
+  h += '<table><tbody>';
+  h += '<tr><td>Comida por día</td><td class="num">'+ccInput('comidaDiaAyC')+'</td></tr>';
+  h += '<tr><td>Bolsa por día</td><td class="num">'+ccInput('bolsaDiaAyC')+'</td></tr>';
+  h += '<tr><td>Caja por día</td><td class="num">'+ccInput('cajaDiaAyC')+'</td></tr>';
+  var totalSinDelivery=(parseFloat(data.costoCliente.comidaDiaAyC)||0)+(parseFloat(data.costoCliente.bolsaDiaAyC)||0)+(parseFloat(data.costoCliente.cajaDiaAyC)||0);
+  h += '<tr class="total-row"><td>Total</td><td class="num">'+fmtGs(totalSinDelivery)+'</td></tr>';
+  h += '</tbody></table></div>';
+
+  h += '</div>';
+
+  document.getElementById('main').innerHTML=h;
+}
+
+
+// ── PROYECCIÓN DE COSTOS ─────────────────────────────────────────────────────
+var FIREBASE_SUSC_URL = 'https://yutri-control-de-menu-default-rtdb.firebaseio.com/suscripciones_app.json';
+var COSTO_COMIDA = 33000;
+var COSTO_BOLSA  = 648;
+var COSTO_CAJA   = 9200;
+var COSTO_DIA    = COSTO_COMIDA + COSTO_BOLSA + COSTO_CAJA; // 42.848
+
+var _proyData = null; // cache de datos de suscripciones
+
+function renderProyeccion(){
+  var h = '<h2 class="page-title">Proyección de costos</h2>';
+  h += '<div class="page-sub">Costo estimado de comidas restantes por cliente activo — trae datos del sistema de suscripciones en tiempo real.</div>';
+
+  h += '<div class="card" style="margin-bottom:16px">';
+  h += '<div style="font-size:13px;font-weight:600;margin-bottom:10px">Costo por día / cliente</div>';
+  h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">';
+  h += '<div><div style="font-size:11px;color:var(--muted)">Comida</div><input type="number" id="pc-comida" value="'+COSTO_COMIDA+'" onchange="actualizarCostos()" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px"></div>';
+  h += '<div><div style="font-size:11px;color:var(--muted)">Bolsa</div><input type="number" id="pc-bolsa" value="'+COSTO_BOLSA+'" onchange="actualizarCostos()" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px"></div>';
+  h += '<div><div style="font-size:11px;color:var(--muted)">Caja</div><input type="number" id="pc-caja" value="'+COSTO_CAJA+'" onchange="actualizarCostos()" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px"></div>';
+  h += '<div style="display:flex;flex-direction:column;justify-content:flex-end"><div style="font-size:11px;color:var(--muted)">Total/día</div><div id="pc-total-dia" style="font-size:16px;font-weight:700;color:var(--danger);padding:6px 0">'+fmtGs(COSTO_DIA)+'</div></div>';
+  h += '</div></div>';
+
+  h += '<div style="display:flex;gap:10px;margin-bottom:16px"><button class="btn btn-green" onclick="cargarDesdeSuscripciones()">🔄 Cargar clientes activos desde suscripciones</button></div>';
+
+  h += '<div id="proyeccion-resultado">';
+  if(_proyData){
+    h += buildProyeccionTabla(_proyData);
+  } else {
+    h += '<div class="empty" style="padding:40px 0"><div style="font-size:32px;margin-bottom:8px">🔮</div><div>Presioná "Cargar clientes activos" para traer los datos del sistema de suscripciones.</div></div>';
+  }
+  h += '</div>';
+
+  document.getElementById('main').innerHTML = h;
+}
+
+function actualizarCostos(){
+  COSTO_COMIDA = parseFloat(document.getElementById('pc-comida').value)||33000;
+  COSTO_BOLSA  = parseFloat(document.getElementById('pc-bolsa').value)||648;
+  COSTO_CAJA   = parseFloat(document.getElementById('pc-caja').value)||9200;
+  COSTO_DIA    = COSTO_COMIDA + COSTO_BOLSA + COSTO_CAJA;
+  document.getElementById('pc-total-dia').textContent = fmtGs(COSTO_DIA);
+  if(_proyData) document.getElementById('proyeccion-resultado').innerHTML = buildProyeccionTabla(_proyData);
+}
+
+function cargarDesdeSuscripciones(){
+  var btn = document.querySelector('[onclick="cargarDesdeSuscripciones()"]');
+  if(btn){ btn.textContent='⏳ Cargando...'; btn.disabled=true; }
+  fetch(FIREBASE_SUSC_URL)
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(fireData){
+      if(!fireData){ throw new Error('No hay datos en Firebase. Abrí el sistema de suscripciones primero.'); }
+      _proyData = fireData;
+      document.getElementById('proyeccion-resultado').innerHTML = buildProyeccionTabla(fireData);
+      if(btn){ btn.textContent='🔄 Cargar clientes activos desde suscripciones'; btn.disabled=false; }
+    })
+    .catch(function(e){
+      document.getElementById('proyeccion-resultado').innerHTML = '<div class="alert" style="background:#FDEDEC;border:1px solid #F09595;padding:12px;border-radius:8px;color:#A32D2D">Error: '+e.message+'</div>';
+      if(btn){ btn.textContent='🔄 Cargar clientes activos desde suscripciones'; btn.disabled=false; }
+    });
+}
+
+function buildProyeccionTabla(fireData){
+  var clientes = fireData.clientes || [];
+  var subs = fireData.suscripciones || [];
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+
+  // Función para calcular días hábiles restantes
+  function weekdaysBetween(startStr, endStr){
+    var start = new Date(startStr+'T00:00:00');
+    var end   = new Date(endStr+'T00:00:00');
+    var count = 0, d = new Date(start);
+    while(d <= end){ if(d.getDay()>=1&&d.getDay()<=5) count++; d.setDate(d.getDate()+1); }
+    return count;
+  }
+  function addWeekdaysAfter(dateStr, n){
+    if(!n) return dateStr;
+    var d = new Date(dateStr+'T00:00:00'), count = 0;
+    while(count<n){ d.setDate(d.getDate()+1); if(d.getDay()>=1&&d.getDay()<=5) count++; }
+    return d.toISOString().slice(0,10);
+  }
+  function todayStr(){ return hoy.toISOString().slice(0,10); }
+
+  var filas = [];
+  var totalComidas = 0, totalCosto = 0;
+
+  clientes.forEach(function(c){
+    // Buscar suscripción activa
+    var subs_c = subs.filter(function(s){ return s.cid === c.id; });
+    subs_c.sort(function(a,b){ return b.inicio > a.inicio ? 1 : -1; });
+    var s = subs_c[0];
+    if(!s) return;
+
+    var pausas = (s.pausas||[]).length;
+    var entregadasEf = Math.max(0, (s.entregadas||0) - pausas);
+    var restantes = s.total - entregadasEf;
+    if(restantes <= 0) return;
+
+    // Calcular fin efectivo
+    var finBase = s.fin;
+    var finEf = pausas > 0 ? addWeekdaysAfter(finBase, pausas) : finBase;
+
+    // Verificar si está activo
+    var finDate = new Date(finEf+'T00:00:00');
+    if(finDate < hoy) return;
+
+    var costo = restantes * COSTO_DIA;
+    totalComidas += restantes;
+    totalCosto += costo;
+
+    filas.push({
+      nombre: c.nombre,
+      plan: s.plan||'',
+      entregadas: entregadasEf,
+      total: s.total,
+      restantes: restantes,
+      finEf: finEf,
+      costo: costo
+    });
+  });
+
+  if(!filas.length){
+    return '<div class="empty">No hay clientes activos con comidas restantes.</div>';
+  }
+
+  filas.sort(function(a,b){ return b.restantes - a.restantes; });
+
+  var h = '<div class="metrics" style="margin-bottom:16px">'+
+    '<div class="metric m-red"><div class="lbl">Comidas restantes (total)</div><div class="val">'+totalComidas+'</div></div>'+
+    '<div class="metric m-red"><div class="lbl">Costo proyectado total</div><div class="val">'+fmtGs(totalCosto)+'</div></div>'+
+    '<div class="metric m-gray"><div class="lbl">Clientes activos</div><div class="val">'+filas.length+'</div></div>'+
+    '<div class="metric m-gray"><div class="lbl">Costo promedio/cliente</div><div class="val">'+fmtGs(Math.round(totalCosto/filas.length))+'</div></div>'+
+  '</div>';
+
+  h += '<table><thead><tr>'+
+    '<th>Cliente</th><th>Plan</th>'+
+    '<th class="num">Entregadas</th><th class="num">Restantes</th>'+
+    '<th>Fin del plan</th><th class="num">Costo proyectado</th>'+
+  '</tr></thead><tbody>';
+
+  filas.forEach(function(f){
+    var pct = Math.round(f.entregadas/f.total*100);
+    var planSimple = f.plan.includes('MENSUAL')||f.plan.includes('Mensual')?'Mensual':
+                     f.plan.includes('SEMANAL')||f.plan.includes('Semanal')?'Semanal':'Prueba';
+    var planColor = planSimple==='Mensual'?'b-mensual':planSimple==='Semanal'?'b-semanal':'b-prueba';
+    h += '<tr>'+
+      '<td><strong>'+f.nombre+'</strong></td>'+
+      '<td><span class="badge '+planColor+'">'+planSimple+'</span></td>'+
+      '<td class="num">'+f.entregadas+'/'+f.total+' <span style="color:#aaa;font-size:11px">('+pct+'%)</span></td>'+
+      '<td class="num" style="font-weight:700;color:var(--danger)">'+f.restantes+'</td>'+
+      '<td style="font-size:12px">'+f.finEf+'</td>'+
+      '<td class="num" style="font-weight:700">'+fmtGs(f.costo)+'</td>'+
+    '</tr>';
+  });
+
+  h += '<tr style="font-weight:700;background:#fafaf8">'+
+    '<td colspan="3">TOTAL</td>'+
+    '<td class="num" style="color:var(--danger)">'+totalComidas+'</td>'+
+    '<td></td>'+
+    '<td class="num">'+fmtGs(totalCosto)+'</td>'+
+  '</tr>';
+  h += '</tbody></table>';
+  h += '<div style="font-size:11px;color:#aaa;margin-top:10px">Costo por día: '+fmtGs(COSTO_DIA)+' (comida Gs '+COSTO_COMIDA.toLocaleString('es-PY')+' + bolsa Gs '+COSTO_BOLSA.toLocaleString('es-PY')+' + caja Gs '+COSTO_CAJA.toLocaleString('es-PY')+'). Sin delivery.</div>';
+
+  return h;
+}
+
+function renderConfig(){
+  var h = '<h2 class="page-title">Planes y precios</h2>';
+  h += '<div class="page-sub">Configurá los planes de Yutri y sus precios — se usan para autocompletar el libro de ventas</div>';
+
+  h += '<div class="toolbar"><div></div><button class="btn btn-green" onclick="abrirPlanModal()">+ Nuevo plan</button></div>';
+  h += '<table><thead><tr><th>Plan</th><th class="num">Días</th><th class="num">Precio (Gs)</th><th></th></tr></thead><tbody>';
+  data.planes.forEach(function(p){
+    h+='<tr><td>'+planBadgeFor(p.nombre)+'</td><td class="num">'+p.dias+'</td><td class="num">'+fmtGs(p.precio)+'</td>'+
+      '<td class="nowrap"><button class="btn btn-sm" onclick="editPlan(\''+p.id+'\')">✏</button> <button class="btn btn-sm btn-danger" onclick="delPlan(\''+p.id+'\')">🗑</button></td></tr>';
+  });
+  h += '</tbody></table>';
+
+  h += '<div class="section-title" style="margin-top:28px">Categorías del libro de compras</div>';
+  h += '<div class="card">';
+  h += '<div style="font-size:12px;color:#888780;margin-bottom:10px">Las categorías '+data.categoriasCompra.slice(0,2).map(function(c){return '<strong>'+c+'</strong>'}).join(' y ')+' se consideran <strong>costo variable</strong> (afectan el costo de ventas). El resto se consideran gastos operativos.</div>';
+  data.categoriasCompra.forEach(function(c,i){
+    h+='<div class="row-flex"><span>'+c+(i<2?' <span class="badge b-cat">costo variable</span>':'')+'</span>'+
+      (i>=2?'<button class="btn btn-sm btn-danger" onclick="delCategoria('+i+')">🗑</button>':'<span></span>')+'</div>';
+  });
+  h += '</div>';
+  h += '<div class="toolbar" style="margin-top:10px"><div class="toolbar-left"><input type="text" id="new-cat" placeholder="Nueva categoría..."></div><button class="btn btn-sm" onclick="addCategoria()">+ Agregar categoría</button></div>';
+
+  h += '<div class="section-title" style="margin-top:28px">Proveedores</div>';
+  h += '<div class="card">';
+  if(!data.proveedores.length){
+    h += '<div style="color:#aaa;font-size:13px;padding:8px 0">No hay proveedores agregados. Se agregan acá o directamente al registrar una compra.</div>';
+  } else {
+    data.proveedores.forEach(function(p,i){
+      h+='<div class="row-flex"><span>'+p+'</span><button class="btn btn-sm btn-danger" onclick="delProveedor('+i+')">🗑</button></div>';
+    });
+  }
+  h += '</div>';
+  h += '<div class="toolbar" style="margin-top:10px"><div class="toolbar-left"><input type="text" id="new-prov" placeholder="Nuevo proveedor..."></div><button class="btn btn-sm" onclick="addProveedor()">+ Agregar proveedor</button></div>';
+
+  h += '<div class="section-title" style="margin-top:28px">Clientes</div>';
+  h += '<div class="card">';
+  if(!data.clientes.length){
+    h += '<div style="color:#aaa;font-size:13px;padding:8px 0">No hay clientes agregados. Se agregan acá o directamente al registrar una venta.</div>';
+  } else {
+    data.clientes.forEach(function(cl,i){
+      h+='<div class="row-flex"><span>'+cl+'</span><button class="btn btn-sm btn-danger" onclick="delCliente('+i+')">🗑</button></div>';
+    });
+  }
+  h += '</div>';
+  h += '<div class="toolbar" style="margin-top:10px"><div class="toolbar-left"><input type="text" id="new-cli" placeholder="Nuevo cliente..."></div><button class="btn btn-sm" onclick="addCliente()">+ Agregar cliente</button></div>';
+
+  document.getElementById('main').innerHTML=h;
+}
+function abrirPlanModal(id){
+  var p = id ? data.planes.find(function(x){return x.id===id}) : null;
+  var h = '<h2>'+(p?'Editar plan':'Nuevo plan')+'</h2>';
+  h += '<div class="fgrid">';
+  h += '<div class="fg full"><label>Nombre del plan</label><input type="text" id="mp-nombre" placeholder="ej: Semanal 1500 kcal" value="'+(p?p.nombre:'')+'"></div>';
+  h += '<div class="fg"><label>Días</label><input type="number" id="mp-dias" value="'+(p?p.dias:'')+'"></div>';
+  h += '<div class="fg"><label>Precio (Gs)</label><input type="number" id="mp-precio" value="'+(p?p.precio:'')+'"></div>';
+  h += '</div>';
+  h += '<div class="modal-footer"><button class="btn" onclick="cerrarModal()">Cancelar</button><button class="btn btn-green" onclick="guardarPlan(\''+(p?p.id:'')+'\')">Guardar</button></div>';
+  document.getElementById('modal-body').innerHTML=h;
+  document.getElementById('overlay').classList.add('open');
+}
+function guardarPlan(id){
+  var nombre=document.getElementById('mp-nombre').value.trim();
+  var dias=parseInt(document.getElementById('mp-dias').value)||0;
+  var precio=parseFloat(document.getElementById('mp-precio').value)||0;
+  if(!nombre||!precio){alert('Completá nombre y precio.');return}
+  if(id){
+    var p=data.planes.find(function(x){return x.id===id});
+    Object.assign(p,{nombre:nombre,dias:dias,precio:precio});
+  } else {
+    data.planes.push({id:uid(),nombre:nombre,dias:dias,precio:precio});
+  }
+  saveData();cerrarModal();renderConfig();
+}
+function editPlan(id){ abrirPlanModal(id); }
+function delPlan(id){
+  if(!confirm('¿Eliminar este plan?'))return;
+  data.planes=data.planes.filter(function(x){return x.id!==id});
+  saveData();renderConfig();
+}
+function addCategoria(){
+  var v=document.getElementById('new-cat').value.trim();
+  if(!v)return;
+  if(data.categoriasCompra.includes(v)){alert('Esa categoría ya existe.');return}
+  data.categoriasCompra.push(v);
+  saveData();renderConfig();
+}
+function delCategoria(i){
+  if(!confirm('¿Eliminar esta categoría?'))return;
+  data.categoriasCompra.splice(i,1);
+  saveData();renderConfig();
+}
+function addProveedor(){
+  var v=document.getElementById('new-prov').value.trim();
+  if(!v)return;
+  if(data.proveedores.includes(v)){alert('Ese proveedor ya existe.');return}
+  data.proveedores.push(v);
+  data.proveedores.sort();
+  saveData();renderConfig();
+}
+function delProveedor(i){
+  if(!confirm('¿Eliminar este proveedor?'))return;
+  data.proveedores.splice(i,1);
+  saveData();renderConfig();
+}
+function addCliente(){
+  var v=document.getElementById('new-cli').value.trim();
+  if(!v)return;
+  if(data.clientes.includes(v)){alert('Ese cliente ya existe.');return}
+  data.clientes.push(v);
+  data.clientes.sort();
+  saveData();renderConfig();
+}
+function delCliente(i){
+  if(!confirm('¿Eliminar este cliente?'))return;
+  data.clientes.splice(i,1);
+  saveData();renderConfig();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// MODAL HELPERS
+// ════════════════════════════════════════════════════════════════════
+function cerrarModal(){ document.getElementById('overlay').classList.remove('open'); }
+document.getElementById('overlay').addEventListener('click',function(e){if(e.target===this)cerrarModal()});
+
+// ════════════════════════════════════════════════════════════════════
+// IMPORT / EXPORT
+// ════════════════════════════════════════════════════════════════════
+function exportAll(){
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='yutri_finanzas_'+todayISO()+'.json';
+  a.click();
+}
+function importAll(ev){
+  var file=ev.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var imported=JSON.parse(e.target.result);
+      if(!confirm('Esto reemplazará todos los datos actuales con los del archivo importado. ¿Continuar?'))return;
+      for(var k in DEFAULT_DATA){ if(!(k in imported)) imported[k]=DEFAULT_DATA[k]; }
+      data=imported;
+      saveData();
+      render();
+      alert('Datos importados correctamente.');
+    }catch(err){
+      alert('Error al leer el archivo. Asegurate de que sea un JSON exportado desde este mismo sistema.');
+    }
+  };
+  reader.readAsText(file);
+  ev.target.value='';
+}
+
+// ════════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════════
+render(); // primer render inmediato con lo que haya en este navegador, para no mostrar pantalla vacía
+
+fetch(FIREBASE_FIN_URL)
+  .then(function(r){ return r.json(); })
+  .then(function(remote){
+    if(remote){
+      for(var k in DEFAULT_DATA){ if(!(k in remote)) remote[k]=DEFAULT_DATA[k]; }
+      data=remote;
+      try{ localStorage.setItem('yutri_finanzas', JSON.stringify(data)); }catch(e){}
+      render();
+      setSyncStatus('en línea ✓');
+    } else {
+      // Todavía no hay nada en Firebase: subimos lo que ya teníamos guardado en este navegador.
+      setSyncStatus('en línea ✓ (primera carga a Firebase)');
+      saveData();
+    }
+  })
+  .catch(function(e){
+    console.error(e);
+    setSyncStatus('⚠ sin conexión — mostrando datos guardados en este dispositivo');
+  });
+</script>
+</body>
+</html>
